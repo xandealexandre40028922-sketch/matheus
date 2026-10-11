@@ -18,21 +18,228 @@ h1{font-size:1.05rem;margin:2px 0;letter-spacing:.5px;text-transform:uppercase;b
 #arena{position:relative;width:100%;max-width:480px;flex:1;min-height:0;background:linear-gradient(160deg,#241848,#140d26);border:2px solid #3b2a66;border-radius:20px;overflow:hidden;touch-action:manipulation;box-shadow:0 0 40px rgba(255,61,113,.15) inset}
 #arena.shake{animation:sh .25s}
 @keyframes sh{0%,100%{transform:none}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
-.t{position:absolute;font-size:3.2rem;line-height:1;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5));animation:pop .18s ease-out}
+.t{position:absolute;font-size:3.2rem;line-height:1;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5));animation:pop .18s ease-out;cursor:pointer}
 .t.pist{filter:hue-rotate(80deg) saturate(.9) drop-shadow(0 4px 8px rgba(0,0,0,.5))}
 .t.good{filter:drop-shadow(0 0 10px var(--ac))}
 @keyframes pop{from{transform:scale(.2) rotate(-30deg)}to{transform:none}}
 .fl{position:absolute;font-weight:800;font-size:1rem;pointer-events:none;white-space:nowrap;animation:up .9s forwards;text-shadow:0 2px 6px #000}
 @keyframes up{to{transform:translateY(-50px);opacity:0}}
 #toast{position:absolute;left:0;right:0;bottom:14px;text-align:center;font-weight:800;color:var(--ac2);padding:0 12px;pointer-events:none;min-height:1.4em;text-shadow:0 2px 8px #000}
-.ov{position:absolute;inset:0;background:rgba(13,8,24,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:18px;gap:10px;overflow:auto}
+.ov{position:absolute;inset:0;background:rgba(13,8,24,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:18px;gap:10px;overflow:auto;z-index:10}
 .ov h2{margin:0;font-size:1.6rem}
 .ov p{margin:0;color:var(--mut);font-size:.95rem}
 .ov ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;width:100%}
 .ov li{background:var(--card);border-radius:10px;padding:8px 10px;font-weight:700;font-size:.9rem}
-button{background:linear-gradient(90deg,var(--ac),#ff7a45);color:#fff;border:0;border-radius:14px;padding:14px 30px;font-size:1.1rem;font-weight:800;box-shadow:0 6px 20px rgba(255,61,113,.4)}
+button{background:linear-gradient(90deg,var(--ac),#ff7a45);color:#fff;border:0;border-radius:14px;padding:14px 30px;font-size:1.1rem;font-weight:800;box-shadow:0 6px 20px rgba(255,61,113,.4);cursor:pointer}
 button.alt{background:var(--card);box-shadow:none;border:1px solid #3b2a66;font-size:.95rem;padding:10px 20px}
 .big{font-size:2.8rem;font-weight:900;color:var(--ac)}
 .chad{font-size:.85rem;color:var(--mut)}
-.hide{display:none}
+.hide{display:none !important}
 </style>
+</head>
+<body>
+
+<header>
+    <h1>Treino Slayer do Matheus</h1>
+</header>
+
+<div class="hud">
+    <span id="score-display">Pontos: 0</span>
+    <span id="time-display">Tempo: 30s</span>
+</div>
+
+<div class="meter">
+    <div id="fill"></div>
+</div>
+
+<div id="arena">
+    <!-- Tela Inicial -->
+    <div id="start-screen" class="ov">
+        <h2 class="big">TREINO SLAYER</h2>
+        <p>Destrua os alvos vermelhos iluminados! Evite os esverdeados/pistache para não perder pontos.</p>
+        <button onclick="startGame()">Iniciar Treino</button>
+        <p class="chad">Matheus Fernandes de Campos</p>
+    </div>
+
+    <!-- Tela de Game Over -->
+    <div id="game-over-screen" class="ov hide">
+        <h2>Treino Concluído!</h2>
+        <p>Você finalizou o circuito.</p>
+        <ul>
+            <li id="final-score">Pontuação Final: 0</li>
+            <li id="max-combo">Maior Combo: 0x</li>
+        </ul>
+        <button onclick="startGame()">Treinar Novamente</button>
+        <button class="alt" onclick="resetGame()">Voltar ao Início</button>
+    </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const arena = document.getElementById('arena');
+const fill = document.getElementById('fill');
+const scoreDisplay = document.getElementById('score-display');
+const timeDisplay = document.getElementById('time-display');
+const startScreen = document.getElementById('start-screen');
+const gameOverScreen = document.getElementById('game-over-screen');
+const finalScore = document.getElementById('final-score');
+const maxComboDisplay = document.getElementById('max-combo');
+const toast = document.getElementById('toast');
+
+let score = 0;
+let combo = 0;
+let highestCombo = 0;
+let timeLeft = 30;
+let gameInterval = null;
+let targetInterval = null;
+const gameDuration = 30;
+
+const goodTargets = ['🔥', '⚔️', '👹', '⚡', '🎯'];
+const badTargets = ['🤢', '🤮', '💀', '☣️'];
+
+function startGame() {
+    score = 0;
+    combo = 0;
+    highestCombo = 0;
+    timeLeft = gameDuration;
+    
+    scoreDisplay.textContent = `Pontos: ${score}`;
+    timeDisplay.textContent = `Tempo: ${timeLeft}s`;
+    fill.style.width = '100%';
+    toast.textContent = '';
+    
+    startScreen.classList.add('hide');
+    gameOverScreen.classList.add('hide');
+    
+    const targets = arena.querySelectorAll('.t');
+    targets.forEach(t => t.remove());
+
+    clearInterval(gameInterval);
+    clearInterval(targetInterval);
+
+    gameInterval = setInterval(updateTimer, 1000);
+    targetInterval = setInterval(spawnTarget, 600);
+    
+    spawnTarget();
+    spawnTarget();
+}
+
+function updateTimer() {
+    timeLeft--;
+    timeDisplay.textContent = `Tempo: ${timeLeft}s`;
+    
+    const percentage = (timeLeft / gameDuration) * 100;
+    fill.style.width = `${percentage}%`;
+
+    if (timeLeft <= 0) {
+        endGame();
+    }
+}
+
+function spawnTarget() {
+    if (timeLeft <= 0) return;
+
+    const target = document.createElement('div');
+    target.classList.add('t');
+    
+    const isGood = Math.random() > 0.25;
+    
+    if (isGood) {
+        target.classList.add('good');
+        target.textContent = goodTargets[Math.floor(Math.random() * goodTargets.length)];
+    } else {
+        target.classList.add('pist');
+        target.textContent = badTargets[Math.floor(Math.random() * badTargets.length)];
+    }
+
+    const size = 60;
+    const maxX = arena.clientWidth - size;
+    const maxY = arena.clientHeight - size;
+    
+    const randomX = Math.max(10, Math.floor(Math.random() * (maxX > 0 ? maxX : 200)));
+    const randomY = Math.max(10, Math.floor(Math.random() * (maxY > 0 ? maxY : 200)));
+    
+    target.style.left = `${randomX}px`;
+    target.style.top = `${randomY}px`;
+
+    target.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleTargetClick(isGood, randomX, randomY);
+        target.remove();
+    });
+
+    arena.appendChild(target);
+
+    setTimeout(() => {
+        if (target.parentNode) {
+            target.remove();
+            if (isGood && timeLeft > 0) {
+                combo = 0;
+            }
+        }
+    }, 1300);
+}
+
+function handleTargetClick(isGood, x, y) {
+    const floatText = document.createElement('div');
+    floatText.classList.add('fl');
+    floatText.style.left = `${x}px`;
+    floatText.style.top = `${y}px`;
+
+    if (isGood) {
+        combo++;
+        if (combo > highestCombo) highestCombo = combo;
+        
+        const pointsGained = 10 * combo;
+        score += pointsGained;
+        
+        floatText.textContent = `+${pointsGained}`;
+        floatText.style.color = 'var(--ok)';
+        
+        if (combo % 5 === 0) {
+            showToast(`COMBO ${combo}x! CRÍTICO!`);
+        }
+    } else {
+        combo = 0;
+        score = Math.max(0, score - 25);
+        
+        floatText.textContent = '-25';
+        floatText.style.color = 'var(--ac)';
+        
+        arena.classList.add('shake');
+        setTimeout(() => arena.classList.remove('shake'), 250);
+        showToast('ALVO INVALIDADO!');
+    }
+
+    scoreDisplay.textContent = `Pontos: ${score}`;
+    arena.appendChild(floatText);
+
+    setTimeout(() => floatText.remove(), 900);
+}
+
+function showToast(message) {
+    toast.textContent = message;
+    setTimeout(() => {
+        if (toast.textContent === message) toast.textContent = '';
+    }, 1200);
+}
+
+function endGame() {
+    clearInterval(gameInterval);
+    clearInterval(targetInterval);
+    
+    finalScore.textContent = `Pontuação Final: ${score}`;
+    maxComboDisplay.textContent = `Maior Combo: ${highestCombo}x`;
+    
+    gameOverScreen.classList.remove('hide');
+}
+
+function resetGame() {
+    gameOverScreen.classList.add('hide');
+    startScreen.classList.remove('hide');
+}
+</script>
+</body>
+</html>
