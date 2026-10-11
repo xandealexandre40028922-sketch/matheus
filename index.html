@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Treino Slayer do Matheus Fernandes de Campos</title>
+<title>Treino do arrokbado do Matheus Fernandes de Campos</title>
 <style>
 :root{--bg1:#0d0818;--bg2:#2a0f3d;--card:#1b1230;--fg:#f6f1ff;--mut:#a99cc9;--ac:#ff3d71;--ac2:#ffb703;--ok:#2ee6a6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -40,7 +40,7 @@ button.alt{background:var(--card);box-shadow:none;border:1px solid #3b2a66;font-
 <body>
 
 <header>
-    <h1>Treino Slayer do Matheus</h1>
+    <h1>Treino do corno do Matheus</h1>
 </header>
 
 <div class="hud">
@@ -56,15 +56,15 @@ button.alt{background:var(--card);box-shadow:none;border:1px solid #3b2a66;font-
     <!-- Tela Inicial -->
     <div id="start-screen" class="ov">
         <h2 class="big">TREINO SLAYER</h2>
-        <p>Destrua os alvos vermelhos iluminados! Evite os esverdeados/pistache para não perder pontos.</p>
+        <p>Destrua os alvos vermelhos iluminados! Evite o sorvete de pistache para não perder pontos. (Tipo É, Tipo An, Tipo Nada ver</p>
         <button onclick="startGame()">Iniciar Treino</button>
         <p class="chad">Matheus Fernandes de Campos</p>
     </div>
 
     <!-- Tela de Game Over -->
     <div id="game-over-screen" class="ov hide">
-        <h2>Treino Concluído!</h2>
-        <p>Você finalizou o circuito.</p>
+        <h2>Terminou, seu animal!</h2>
+        <p>Você finalizou o circuito,parabéns, Qi De Chimpanzé</p>
         <ul>
             <li id="final-score">Pontuação Final: 0</li>
             <li id="max-combo">Maior Combo: 0x</li>
@@ -96,7 +96,7 @@ let targetInterval = null;
 const gameDuration = 30;
 
 const goodTargets = ['🔥', '⚔️', '👹', '⚡', '🎯'];
-const badTargets = ['🤢', '🤮', '💀', '☣️'];
+const badTargets = ['🍆', '🤮', '💀', '☣️'];
 
 function startGame() {
     score = 0;
